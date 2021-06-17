@@ -1,0 +1,52 @@
+package com.example.vaccinationstart.controller;
+
+import com.example.vaccinationstart.model.Person;
+import com.example.vaccinationstart.service.VaccinationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@RestController
+@RequiredArgsConstructor
+public class VaccinationController {
+
+    private final VaccinationService vaccinationService;
+
+    @GetMapping("/persons")
+    public List<Person> getPersons() {
+        return vaccinationService.getPersons();
+    }
+
+    @PostMapping("/person")
+    public Person addPerson(@RequestParam String name) {
+        return vaccinationService.addPerson(name);
+    }
+
+    @PostMapping(value = "/person/{personId}/vaccination")
+    public EntityModel<Person> scheduleVaccination(@PathVariable(name = "personId") UUID personId,
+                                                                        @RequestParam(name = "date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return EntityModel.of(vaccinationService.scheduleVaccination(personId, date));
+    }
+
+    @GetMapping(value = "/person/{personId}/generate-certificate")
+    public ResponseMessage generateCertificate(@PathVariable UUID personId) {
+        return new ResponseMessage(vaccinationService.generateCertificate(personId));
+    }
+
+    @PostMapping("/test-data")
+    public void generateTestData() {
+        vaccinationService.generateTestData();
+    }
+}
